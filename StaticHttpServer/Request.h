@@ -20,7 +20,7 @@ public:
 
     inline void set_method(Method m) { method_ = m; }
     inline void set_version(Version v) { version_ = v; }
-    inline void set_uri(std::string &&s) { uri_ = s; }
+    inline void push_uri(char ch) { uri_.push_back(ch); }
     inline void set_header(const std::string &name, const std::string &value) { headers_[name] = value; }
     inline void set_body(const std::string && s) { body_ = s; }
 

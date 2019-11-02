@@ -14,19 +14,19 @@ namespace http {
 class RequestParser
 {
 public:
-    RequestParser(): state_(state::METHOD_START) {}
+    RequestParser(): state_(State::METHOD_START) {}
     ~RequestParser(){}
 
-    enum parse_result {
+    enum ParseResult {
         GOOD,// 解析完成，格式上无误
         BAD,// 解析中发现请求格式错误
         UNFINISHED// 未解析完，等待后续字符流继续输入
     };
 
-    parse_result Parse(char *begin, char *end, Request &req);
+    ParseResult Parse(char *begin, char *end, Request &req);
 
 private:
-    enum state {
+    enum State {
         METHOD_START,// 初始状态
         METHOD,
         URI,
@@ -42,7 +42,10 @@ private:
         END
     } state_;
 
-    parse_result parse_one(char in, Request &req);
+    std::string method_;
+    std::string version_;
+
+    ParseResult parse_one(char in, Request &req);
 };
 
 }// namespace http
