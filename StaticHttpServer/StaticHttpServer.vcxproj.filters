@@ -18,12 +18,33 @@
     <ClInclude Include="pch.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="RequestHandler.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="RequestParser.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Request.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="basic.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="StaticHttpServer.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="RequestHandler.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="RequestParser.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Request.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>

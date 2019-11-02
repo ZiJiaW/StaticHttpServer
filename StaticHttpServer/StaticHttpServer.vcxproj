@@ -156,7 +156,11 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="basic.h" />
     <ClInclude Include="pch.h" />
+    <ClInclude Include="Request.h" />
+    <ClInclude Include="RequestHandler.h" />
+    <ClInclude Include="RequestParser.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp">
@@ -165,6 +169,9 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="Request.cpp" />
+    <ClCompile Include="RequestHandler.cpp" />
+    <ClCompile Include="RequestParser.cpp" />
     <ClCompile Include="StaticHttpServer.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
