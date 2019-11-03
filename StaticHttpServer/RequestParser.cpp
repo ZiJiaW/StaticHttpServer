@@ -13,7 +13,10 @@ RequestParser::ParseResult RequestParser::Parse(char *begin, char *end, Request 
     return ParseResult::UNFINISHED;
 }
 
-
+/*** Implementation of FSM
+Note: this function doesn't check the correctness of request, it
+      just segments the request stream.
+*/
 RequestParser::ParseResult RequestParser::parse_one(char in, Request &req)
 {
     switch (state_)
@@ -25,17 +28,10 @@ RequestParser::ParseResult RequestParser::parse_one(char in, Request &req)
     case State::METHOD:
         if (in == ' ') {
             state_ = State::URI;
-            if (method_ == "GET") {
-                req.set_method(Method::GET);
-            }
-            else if (method_ == "POST") {
-                req.set_method(Method::POST);
-            }
-            else {
-                return ParseResult::BAD;
-            }
+            req.set_method(std::move(method_));
         }
-        else method_.push_back(in);
+        else
+            method_.push_back(in);
         return ParseResult::UNFINISHED;
     case State::URI:
         if (in == 'in')
@@ -45,32 +41,67 @@ RequestParser::ParseResult RequestParser::parse_one(char in, Request &req)
         return ParseResult::UNFINISHED;
     case State::VERSION:
         if (in == '\r') {
-            state_ = State::CLRF_1;
-            if (version_ != "HTTP/1.1")
-                return ParseResult::BAD;
-            req.set_version(Version::HTTP_1_1);
+            state_ = State::CRLF_1;
+            req.set_version(std::move(version_));
         }
         else
             version_.push_back(in);
         return ParseResult::UNFINISHED;
-    case State::CLRF_1:
+    case State::CRLF_1:
         if (in == '\n')
             state_ = State::HEADER;
         else
             return ParseResult::BAD;
         return ParseResult::UNFINISHED;
     case State::HEADER:
-        break;
+        if (in == ':')
+            state_ = State::HEADER_COLON;
+        else
+            header_name_.push_back(in);
+        return ParseResult::UNFINISHED;
     case State::HEADER_COLON:
-        break;
+        if (in == ' ')
+            state_ = State::HEADER_VALUE;
+        else
+            return ParseResult::BAD;
+        return ParseResult::UNFINISHED;
     case State::HEADER_VALUE:
-        break;
-    case State::CLRF_2:
-        break;
+        if (in == '\r') {
+            state_ = State::CRLF_2;
+            req.set_header(std::move(header_name_), std::move(header_value_));
+        }
+        else
+            header_value_.push_back(in);
+        return ParseResult::UNFINISHED;
+    case State::CRLF_2:
+        if (in == '\n')
+            state_ = State::EXPECT_END;
+        else
+            return ParseResult::BAD;
+        return ParseResult::UNFINISHED;
     case State::EXPECT_END:
-        break;
+        if (in == '\r')
+            state_ = State::END_HEADER;
+        else {
+            header_name_.push_back(in);
+            state_ = State::HEADER;
+        }
+        return ParseResult::UNFINISHED;
     case State::END_HEADER:
-        break;
+        if (in == '\n') {
+            switch (req.method())
+            {
+            case Method::GET:
+                state_ = State::END;
+                return ParseResult::GOOD;
+            case Method::POST:
+                state_ = State::BODY;
+            default:// this won't happen
+                return ParseResult::BAD;
+            }
+        }
+        else
+            return ParseResult::BAD;
     case State::BODY:
         break;
     case State::END:

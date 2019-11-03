@@ -4,13 +4,13 @@
 namespace http {
 
 /* http请求结构
-|method|space|URL|space|version|CLRF(\r\n)|
-|header name|:|space|header value|CLRF|
+|method     |space|URL  |space       |version|CRLF(\r\n)|
+|header name|  :  |space|header value|CRLF   |
 ...headers
-|CLRF|
-|request body|
+|CRLF       |
+|requestbody|
 */
-// 通过有限状态机解析请求
+// 简单的有限状态机实现parser
 class RequestParser
 {
 public:
@@ -31,11 +31,11 @@ private:
         METHOD,
         URI,
         VERSION,
-        CLRF_1,// 版本号后的换行意味着后面是header
+        CRLF_1,// 版本号后的换行意味着后面是header
         HEADER,
         HEADER_COLON,
         HEADER_VALUE,
-        CLRF_2,// 这里不同，可能是结束点
+        CRLF_2,// 这里不同，可能是结束点
         EXPECT_END,
         END_HEADER,
         BODY,
@@ -44,6 +44,9 @@ private:
 
     std::string method_;
     std::string version_;
+
+    std::string header_name_;
+    std::string header_value_;
 
     ParseResult parse_one(char in, Request &req);
 };
