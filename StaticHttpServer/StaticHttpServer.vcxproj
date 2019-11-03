@@ -162,6 +162,9 @@
     <ClInclude Include="RequestHandler.h" />
     <ClInclude Include="RequestParser.h" />
     <ClInclude Include="Response.h" />
+    <ClInclude Include="Server.h" />
+    <ClInclude Include="Session.h" />
+    <ClInclude Include="SessionController.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="basic.cpp" />
@@ -175,6 +178,9 @@
     <ClCompile Include="RequestHandler.cpp" />
     <ClCompile Include="RequestParser.cpp" />
     <ClCompile Include="Response.cpp" />
+    <ClCompile Include="Server.cpp" />
+    <ClCompile Include="Session.cpp" />
+    <ClCompile Include="SessionController.cpp" />
     <ClCompile Include="StaticHttpServer.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
