@@ -3,7 +3,7 @@
 
 namespace http {
 
-inline void Request::set_version(std::string &&v)
+void Request::set_version(std::string &&v)
 {
     if (v != "HTTP/1.1") {
         is_valid_ = false;
@@ -14,7 +14,7 @@ inline void Request::set_version(std::string &&v)
     v.clear();
 }
 
-inline void Request::set_method(std::string &&m)
+void Request::set_method(std::string &&m)
 {
     if (m == "GET")
         method_ = Method::GET;

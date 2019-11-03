@@ -30,6 +30,9 @@
     <ClInclude Include="basic.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="Response.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp">
@@ -45,6 +48,12 @@
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="Request.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="basic.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Response.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>

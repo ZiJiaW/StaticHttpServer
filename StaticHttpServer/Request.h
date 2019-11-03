@@ -9,18 +9,18 @@ public:
     Request(): is_valid_(true), keep_alive_(true), status_(StatusCode::OK) {}
     ~Request(){}
 
-    inline void set_method(std::string &&m);
-    inline void set_version(std::string &&v);
-    inline void push_uri(char ch) { uri_.push_back(ch); }
-    inline void set_body(const std::string && s) { body_ = s; }
+    void set_method(std::string &&m);
+    void set_version(std::string &&v);
+    void push_uri(char ch) { uri_.push_back(ch); }
+    void set_body(std::string &&s) { body_ = s; }
 
-    inline Method method() { return method_; }
+    Method method() { return method_; }
 
-    inline bool ok() { return is_valid_; }
+    bool ok() { return is_valid_; }
 
     void set_header(std::string &&name, std::string &&value);
 
-    inline int content_length() { return content_length_; }
+    int content_length() { return content_length_; }
 private:
     Method method_;
     Version version_;

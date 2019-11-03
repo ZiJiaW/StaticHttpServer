@@ -7,7 +7,7 @@ namespace mime_types {
 
 using namespace std;
 
-auto mime_map = unordered_map<string, string>({
+unordered_map<string, string> mime_map = unordered_map<string, string>({
     {"gif", "image/gif"},
     {"jpg", "image/jpeg"},
     {"htm", "text/htm"},
@@ -27,7 +27,7 @@ string GetType(const string &extension) {
     return default_type;
 }
 
-string default_type("text/plain");
+string default_type = string("text/plain");
 
 
 }// namespace mimetypes

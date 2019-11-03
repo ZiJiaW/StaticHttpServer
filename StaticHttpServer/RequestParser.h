@@ -48,6 +48,8 @@ private:
     std::string header_name_;
     std::string header_value_;
 
+    std::string body_;
+
     ParseResult parse_one(char in, Request &req);
 };
 
