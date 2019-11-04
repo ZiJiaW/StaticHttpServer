@@ -6,13 +6,14 @@ namespace http {
 class Request
 {
 public:
-    Request(): is_valid_(true), keep_alive_(true), status_(StatusCode::OK) {}
+    Request(): is_valid_(true), keep_alive_(true), status_(StatusCode::OK), chunked_(false) {}
     ~Request(){}
 
     void set_method(std::string &&m);
     void set_version(std::string &&v);
     void push_uri(char ch) { uri_.push_back(ch); }
     void set_body(std::string &&s) { body_ = s; }
+    void push_body(char ch) { body_.push_back(ch); }
 
     Method method() { return method_; }
 
@@ -21,6 +22,7 @@ public:
     void set_header(std::string &&name, std::string &&value);
 
     int content_length() { return content_length_; }
+    bool chunked() { return chunked_; }
 private:
     Method method_;
     Version version_;
@@ -32,6 +34,7 @@ private:
     int content_length_;
     bool keep_alive_;
     StatusCode status_;
+    bool chunked_;
 
     // is valid?
     bool is_valid_;

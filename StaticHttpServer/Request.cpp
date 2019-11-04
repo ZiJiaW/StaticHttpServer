@@ -36,14 +36,14 @@ void Request::set_header(std::string &&name, std::string &&value)
         try {
             content_length_ = std::stoi(value);
         }
-        catch (const std::invalid_argument &ex) {
+        catch (const std::exception &ex) {
+            std::cout << ex.what() << std::endl;
             status_ = StatusCode::BAD_REQUEST;
             is_valid_ = false;
         }
-        catch (const std::out_of_range &ex) {
-            status_ = StatusCode::BAD_REQUEST;
-            is_valid_ = false;
-        }
+    }
+    if (name == "Transfer-Encoding") {// 请求进行分块传输
+        chunked_ = value == "chunked";
     }
     // TODO: some other headers to analyze
     // ...

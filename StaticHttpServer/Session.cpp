@@ -14,7 +14,41 @@ Session::Session(boost::asio::ip::tcp::socket socket,
     request_handler_(request_handler)
 {}
 
-void Session::Run()
+void Session::Open()
+{
+    do_read();
+}
+
+void Session::Close()
+{
+    std::cout << "Close connection: " 
+        << socket_.remote_endpoint().address()
+        << ": "<< socket_.remote_endpoint().port() 
+        << std::endl;
+    socket_.close();
+}
+
+void Session::do_read()
+{
+    auto self(shared_from_this());
+    socket_.async_read_some(boost::asio::buffer(buffer_), 
+    [this, self](boost::system::error_code ec, std::size_t nr_bytes)
+    {
+        if (ec) {
+            std::cout << "Bad read!" << std::endl;
+            Close();
+            return;
+        }
+        Request req;
+        auto parse_result = request_handler_.parser().Parse(buffer_.data(), buffer_.data() + nr_bytes, req);
+        if (parse_result = RequestParser::ParseResult::BAD) {
+            // 这里的bad是请求格式错误，没有深层次进行处理
+
+        }
+    });
+}
+
+void Session::do_write()
 {
 
 }

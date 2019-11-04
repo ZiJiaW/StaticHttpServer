@@ -4,11 +4,15 @@
 #include "Session.h"
 
 namespace http {
+
 class SessionController
 {
 public:
-    SessionController();
-    ~SessionController();
+
+    SessionController(const SessionController &sc) = delete;
+    SessionController operator= (const SessionController &sc) = delete;
+    SessionController(){}
+    ~SessionController(){}
 
     void StopAll();
     void Stop(std::shared_ptr<Session> sp);

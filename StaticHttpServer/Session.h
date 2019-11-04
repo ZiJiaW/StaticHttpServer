@@ -1,10 +1,11 @@
 #pragma once
-#include "SessionController.h"
 #include "Request.h"
 #include "pch.h"
 #include "RequestHandler.h"
 
 namespace http {
+
+class SessionController;
 
 class Session : public std::enable_shared_from_this<Session>
 {
@@ -17,7 +18,8 @@ public:
         RequestHandler &request_handler);
     ~Session(){}
 
-    void Run();
+    void Open();
+    void Close();
 
 private:
     // 本次会话的socket对象
@@ -32,6 +34,10 @@ private:
     Request request_;
     // 请求处理句柄
     RequestHandler &request_handler_;
+
+    // R/W function
+    void do_read();
+    void do_write();
 };
 
 }// namespace http

@@ -14,7 +14,7 @@ RequestParser::ParseResult RequestParser::Parse(char *begin, char *end, Request 
 }
 
 /* Implementation of FSM.
-Note: this function doesn't check the correctness of request, it
+Note: this function doesn't fully check the correctness of request, it
       just segments the request stream.
 */
 RequestParser::ParseResult RequestParser::parse_one(char in, Request &req)
@@ -62,8 +62,10 @@ RequestParser::ParseResult RequestParser::parse_one(char in, Request &req)
     case State::HEADER_COLON:
         if (in == ' ')
             state_ = State::HEADER_VALUE;
-        else
+        else {
+            header_name_.clear();
             return ParseResult::BAD;
+        }
         return ParseResult::UNFINISHED;
     case State::HEADER_VALUE:
         if (in == '\r') {
@@ -92,12 +94,14 @@ RequestParser::ParseResult RequestParser::parse_one(char in, Request &req)
             switch (req.method())
             {
             case Method::GET:
-                state_ = State::END;
                 return ParseResult::GOOD;
             case Method::POST:
                 if (req.content_length() == 0) {
-                    state_ = State::END;
                     return ParseResult::GOOD;
+                }
+                if (req.chunked()) {
+                    state_ = State::CHUNK_LENGTH;
+                    return ParseResult::UNFINISHED;
                 }
                 state_ = State::BODY;
                 return ParseResult::UNFINISHED;
@@ -113,13 +117,65 @@ RequestParser::ParseResult RequestParser::parse_one(char in, Request &req)
             req.set_body(std::move(body_));
             return ParseResult::GOOD;
         }
+        return body_.size() > req.content_length() ? body_.clear(), ParseResult::BAD : ParseResult::UNFINISHED;
+    case State::CHUNK_LENGTH:
+        if (in == '\r') {
+            state_ = State::AFTER_LENGTH;
+            try {
+                chunk_length_ = stoi(s_chunk_length_, 0, 16);
+            }
+            catch (std::exception e) {
+                std::cout << e.what() << std::endl;
+                s_chunk_length_.clear();
+                chunk_length_ = 0;
+                return ParseResult::BAD;
+            }
+            return ParseResult::UNFINISHED;
+        }
+        s_chunk_length_.push_back(in);
         return ParseResult::UNFINISHED;
+    case State::AFTER_LENGTH:
+        if (in == '\n') {
+            state_ = chunk_length_ == 0 ? State::BEFORE_END : State::CHUNK_BODY;
+            return ParseResult::UNFINISHED;
+        }
+        s_chunk_length_.clear();
+        chunk_length_ = 0;
+        return ParseResult::BAD;
+    case State::CHUNK_BODY:
+        if (in == '\r') {
+            state_ = State::AFTER_BODY;
+            return chunk_length_ == 0 ? ParseResult::UNFINISHED : chunk_length_ = 0, ParseResult::BAD;
+        }
+        req.push_body(in);
+        return --chunk_length_ < 0 ? chunk_length_ = 0, ParseResult::BAD : ParseResult::UNFINISHED;
+    case State::AFTER_BODY:
+        if (in == '\n') {
+            state_ = State::CHUNK_LENGTH;
+            return ParseResult::UNFINISHED;
+        }
+        return ParseResult::BAD;
+    case State::BEFORE_END:
+        chunk_length_ = 0;
+        s_chunk_length_.clear();
+        if (in == '\r') {
+            state_ = State::END;
+            return ParseResult::UNFINISHED;
+        }
+        return ParseResult::BAD;
     case State::END:
-        break;
+        return in == '\n' ? ParseResult::GOOD : ParseResult::BAD;
     default:
         break;
     }
     return ParseResult::BAD;
+}
+
+// 这里只需要将状态掰回原位
+// 不需要做多余的清理，在状态机返回时已完成缓存的清理
+void RequestParser::Reset()
+{
+    state_ = State::METHOD_START;
 }
 
 }// namespace http

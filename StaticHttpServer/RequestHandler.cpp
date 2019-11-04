@@ -3,12 +3,6 @@
 
 namespace http {
 
-RequestHandler::RequestHandler()
-{
-}
 
 
-RequestHandler::~RequestHandler()
-{
-}
 }

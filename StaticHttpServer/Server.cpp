@@ -26,8 +26,13 @@ Server::Server(short port, int nr_threads):
         std::cerr << "Failed when opening the port! Please check!" << std::endl;
         exit(1);
     }
-
-    acceptor_.listen();
+    try {
+        acceptor_.listen();
+    }
+    catch (const std::exception &ex) {
+        std::cerr << "Can't listen: " << ex.what() << std::endl;
+        exit(1);
+    }
     do_accept();// 注册接收新的连接事件
 }
 
@@ -54,8 +59,8 @@ void Server::do_accept()
         }
         if (!ec) {
             auto tmp = get_io_context();
-            std::make_shared<Session>(std::move(socket), *std::get<0>(tmp),
-                session_controller_, *std::get<1>(tmp))->Run();
+            session_controller_.Start(std::make_shared<Session>(
+                std::move(socket), *std::get<0>(tmp), session_controller_, *std::get<1>(tmp)));
         }
         else {
             std::cout << "Error happened when connecting! Abort!" << std::endl;
@@ -73,6 +78,7 @@ void Server::do_await_shutdown()
 }
 
 // 轮转调度线程来分配任务
+// 这里还为每个线程绑定了一个RequestHandler来消除锁
 std::tuple<IO_Ctx_Ptr, Rh_Ptr> Server::get_io_context()
 {
     if (io_contexts_.empty()) {
