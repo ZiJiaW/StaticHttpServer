@@ -1,12 +1,6 @@
 #include "pch.h"
 #include "SessionController.h"
 
+namespace http {
 
-SessionController::SessionController()
-{
-}
-
-
-SessionController::~SessionController()
-{
 }

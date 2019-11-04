@@ -5,6 +5,7 @@
 namespace http {
 
 using IO_Ctx_Ptr = std::shared_ptr<boost::asio::io_context>;
+using Rh_Ptr = std::shared_ptr<RequestHandler>;
 
 class Server
 {
@@ -33,13 +34,13 @@ private:
     // 管理所有http会话
     SessionController session_controller_;
     // 用于处理请求
-    RequestHandler request_handler_;
+    std::vector<Rh_Ptr> handlers_;
     // 发出接收请求
     void do_accept();
     // 结束时，graceful shutdown
     void do_await_shutdown();
     // 分配请求到新的IO context
-    IO_Ctx_Ptr &get_io_context();
+    std::tuple<IO_Ctx_Ptr, Rh_Ptr> get_io_context();
 };
 
 }// namespace http
