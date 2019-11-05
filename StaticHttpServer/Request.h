@@ -7,7 +7,7 @@ class Request
 {
 public:
     Request(): is_valid_(true), keep_alive_(true), status_(StatusCode::OK), chunked_(false) {}
-    ~Request(){}
+    ~Request() = default;
 
     void set_method(std::string &&m);
     void set_version(std::string &&v);

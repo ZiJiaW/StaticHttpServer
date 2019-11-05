@@ -42,7 +42,7 @@ void Session::do_read()
         Request req;
         auto parse_result = request_handler_.parser().Parse(buffer_.data(), buffer_.data() + nr_bytes, req);
         if (parse_result = RequestParser::ParseResult::BAD) {
-            // 这里的bad是请求格式错误，没有深层次进行处理
+            // 这里的bad是仅表示请求格式错误
 
         }
     });

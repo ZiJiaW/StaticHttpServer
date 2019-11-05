@@ -24,7 +24,7 @@ class RequestParser
 {
 public:
     RequestParser(): state_(State::METHOD_START) {}
-    ~RequestParser(){}
+    ~RequestParser() = default;
 
     enum ParseResult {
         GOOD,// 解析完成，格式上无误

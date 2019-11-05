@@ -20,7 +20,7 @@ public:
     // 调用点
     void Run();
 
-    ~Server() {}
+    ~Server() = default;
 
 private:
     // 线程数

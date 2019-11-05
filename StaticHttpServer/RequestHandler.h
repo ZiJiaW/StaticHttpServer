@@ -6,8 +6,8 @@ namespace http {
 class RequestHandler
 {
 public:
-    RequestHandler(){}
-    ~RequestHandler(){}
+    RequestHandler() = default;
+    ~RequestHandler() = default;
 
     RequestParser &parser() { return request_parser_; }
 
