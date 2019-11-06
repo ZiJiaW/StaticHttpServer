@@ -23,6 +23,7 @@ public:
 
     int content_length() { return content_length_; }
     bool chunked() { return chunked_; }
+    bool keep_alive() { return keep_alive_; }
 private:
     Method method_;
     Version version_;

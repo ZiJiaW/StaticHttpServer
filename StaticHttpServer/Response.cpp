@@ -4,8 +4,5 @@
 
 namespace http {
 
-Response::Response(Response &&rsp) noexcept
-{
 
-}
 }// namespace http

@@ -10,7 +10,7 @@ class SessionController
 public:
 
     SessionController(const SessionController &sc) = delete;
-    SessionController operator= (const SessionController &sc) = delete;
+    SessionController &operator= (const SessionController &sc) = delete;
     SessionController() = default;
     ~SessionController() = default;
 

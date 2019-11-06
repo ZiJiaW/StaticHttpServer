@@ -1,7 +1,8 @@
 #pragma once
-#include "Request.h"
 #include "pch.h"
+#include "Request.h"
 #include "RequestHandler.h"
+#include "Response.h"
 
 namespace http {
 
@@ -11,7 +12,7 @@ class Session : public std::enable_shared_from_this<Session>
 {
 public:
     Session(const Session &session) = delete;
-    Session operator=(const Session &session) = delete;
+    Session &operator=(const Session &session) = delete;
     explicit Session(boost::asio::ip::tcp::socket socket,
         boost::asio::io_context &io_context,
         SessionController &session_controller,
@@ -32,8 +33,12 @@ private:
     std::array<char, 8192> buffer_;
     // 一次请求解析出的request
     Request request_;
+    // 临时存储response
+    Response response_;
     // 请求处理句柄
     RequestHandler &request_handler_;
+    // should close?
+    bool to_close_;
 
     // R/W function
     void do_read();
