@@ -34,7 +34,7 @@ RequestParser::ParseResult RequestParser::parse_one(char in, Request &req)
             method_.push_back(in);
         return ParseResult::UNFINISHED;
     case State::URI:
-        if (in == 'in')
+        if (in == ' ')
             state_ = State::VERSION;
         else
             req.push_uri(in);

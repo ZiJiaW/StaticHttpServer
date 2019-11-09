@@ -3,12 +3,12 @@
 
 namespace http {
 
-// 当前仅支持两种请求方法
+// only two methods now.
 enum Method {
     GET, POST
 };
 
-// 支持版本1.1
+// version 1.1
 enum Version {
     HTTP_1_1
 };
@@ -19,7 +19,7 @@ enum StatusCode {
     CREATED = 201,
     ACCEPTED = 202,
     NO_CONTENT = 204,
-    // 暂不支持3xx重定向
+    // don't support 3xx
     // 4XX
     BAD_REQUEST = 400,
     UNAUTHORIZED = 401,
@@ -37,7 +37,6 @@ enum StatusCode {
     VERSION_NOT_SUPPORTED = 505
 };
 
-// http消息内容类型
 namespace mime_types {
 
 std::string GetType(const std::string &extension);

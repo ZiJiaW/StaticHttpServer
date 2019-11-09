@@ -18,12 +18,13 @@ public:
     Response &operator=(Response &&rsp) noexcept = default;
 
     void set_code(StatusCode code) { code_ = code; }
-
-
+    void set_headline(const std::string &hl) { headline_ = hl; }
+    void set_header(std::string &&name, std::string &&value) { headers_.push_back(std::make_pair(std::move(name), std::move(value))); }
+    void set_body(std::string &&body) { body_ = std::move(body); }
     std::string ToString();
 private:
+    std::string headline_;
     std::vector<std::pair<std::string, std::string>> headers_;
-    std::string content_;
     std::string body_;
     StatusCode code_;
 };

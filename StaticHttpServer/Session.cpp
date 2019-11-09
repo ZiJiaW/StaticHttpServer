@@ -24,7 +24,7 @@ void Session::Close()
 {
     std::cout << "Close connection: " 
         << socket_.remote_endpoint().address()
-        << ": "<< socket_.remote_endpoint().port() 
+        << ":"<< socket_.remote_endpoint().port() 
         << std::endl;
     socket_.shutdown(boost::asio::ip::tcp::socket::shutdown_both);
     socket_.close();
@@ -41,17 +41,20 @@ void Session::do_read()
             session_controller_.Stop(shared_from_this());
             return;
         }
-        auto parse_result = request_handler_.parser().Parse(buffer_.data(), buffer_.data() + nr_bytes, request_);
+        std::cout << std::string(buffer_.data(), nr_bytes) << std::endl;
+        auto parse_result = parser_.Parse(buffer_.data(), buffer_.data() + nr_bytes, request_);
         switch (parse_result) {
         case RequestParser::ParseResult::BAD:
             // 这里的bad是仅表示请求格式错误
             response_ = request_handler_.HandleBadRequest(StatusCode::BAD_REQUEST);
+            parser_.Reset();
             do_write();
             break;
         case RequestParser::ParseResult::GOOD:
             // 进一步解析请求构造应答
             to_close_ = !request_.keep_alive();
             response_ = request_handler_.HandleGoodRequest(request_);
+            parser_.Reset();
             do_write();
         default:// UNFINISHED
             do_read();

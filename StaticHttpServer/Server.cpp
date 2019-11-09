@@ -9,6 +9,7 @@ namespace ip = boost::asio::ip;
 Server::Server(short port, int nr_threads):
     nr_threads_(nr_threads),
     io_contexts_(),
+    handlers_(),
     acceptor_(*std::get<0>(get_io_context())),
     signals_(*std::get<0>(get_io_context())),
     session_controller_()
@@ -46,6 +47,7 @@ void Server::Run()
             io_contexts_[i]->run();
         }));
     }
+    std::cout << "Creating threads num: " << nr_threads_ << std::endl;
     for (auto thp : thread_pool)
         thp->join();
 }
@@ -59,6 +61,7 @@ void Server::do_accept()
         }
         if (!ec) {
             auto tmp = get_io_context();
+            std::cout << "New connection from " << socket.remote_endpoint().address() << ":" << socket.remote_endpoint().port() << std::endl;
             session_controller_.Start(std::make_shared<Session>(
                 std::move(socket), *std::get<0>(tmp), session_controller_, *std::get<1>(tmp)));
         }
@@ -87,9 +90,9 @@ std::tuple<IO_Ctx_Ptr, Rh_Ptr> Server::get_io_context()
             handlers_.push_back(std::make_shared<RequestHandler>());
         }
     }
-    static unsigned int count = 0;
-    if (count >= io_contexts_.size()) count = 0;
-    return std::make_tuple(io_contexts_[count], handlers_[count]);
+    static int count = -1;
+    if (++count >= io_contexts_.size()) count = 0;
+    return std::make_tuple(io_contexts_[count], handlers_[count++]);
 }
 
 }// namespace http
