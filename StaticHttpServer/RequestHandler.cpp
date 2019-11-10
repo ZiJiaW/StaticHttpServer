@@ -23,7 +23,7 @@ std::unordered_map<StatusCode, std::string> RequestHandler::response_str_map = {
     {StatusCode::VERSION_NOT_SUPPORTED, "HTTP/1.1 505 Version Not Supported\r\n"},
 };
 
-Response RequestHandler::HandleBadRequest(StatusCode code)
+std::string RequestHandler::HandleBadRequest(StatusCode code)
 {
     Response rs;
     rs.set_headline(response_str_map[code]);
@@ -35,10 +35,10 @@ Response RequestHandler::HandleBadRequest(StatusCode code)
     rs.set_header("Content-Type", "text/html");
     rs.set_header("Server", "SHS");
     rs.set_body(std::move(body));
-    return rs;
+    return rs.ToString();
 }
 
-Response RequestHandler::HandleGoodRequest(const Request &req)
+std::string RequestHandler::HandleGoodRequest(const Request &req)
 {
     // test
     return HandleBadRequest(StatusCode::NOT_FOUND);

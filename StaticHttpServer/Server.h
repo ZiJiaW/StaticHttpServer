@@ -26,6 +26,8 @@ private:
     int nr_threads_;
     // 多个运行IO事件响应的载体
     std::vector<IO_Ctx_Ptr> io_contexts_;
+    using IO_Ctx_Work = boost::asio::executor_work_guard<boost::asio::io_context::executor_type>;
+    std::vector<IO_Ctx_Work> works_;
     // 用于处理请求
     std::vector<Rh_Ptr> handlers_;
     // 监听端口上的TCP连接

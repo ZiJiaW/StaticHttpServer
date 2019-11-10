@@ -2,7 +2,6 @@
 #include "pch.h"
 #include "Request.h"
 #include "RequestHandler.h"
-#include "Response.h"
 
 namespace http {
 
@@ -34,7 +33,7 @@ private:
     // 一次请求解析出的request
     Request request_;
     // 临时存储response
-    Response response_;
+    std::string response_;
     // 请求处理句柄
     RequestHandler &request_handler_;
     // 每个会话分配一个parser，如果线程级公用的话会发生污染

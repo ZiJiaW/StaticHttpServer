@@ -11,8 +11,8 @@ void SessionController::Start(std::shared_ptr<Session> sess)
 
 void SessionController::Stop(std::shared_ptr<Session> sess)
 {
-    sessions_.erase(sess);
     sess->Close();
+    sessions_.erase(sess);
 }
 
 void SessionController::StopAll()

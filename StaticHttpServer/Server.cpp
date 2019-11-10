@@ -12,7 +12,8 @@ Server::Server(short port, int nr_threads):
     handlers_(),
     acceptor_(*std::get<0>(get_io_context())),
     signals_(*std::get<0>(get_io_context())),
-    session_controller_()
+    session_controller_(),
+    works_()
 {
     signals_.add(SIGINT);
     signals_.add(SIGTERM);
@@ -46,8 +47,8 @@ void Server::Run()
         [this, i]() {
             io_contexts_[i]->run();
         }));
+        std::cout << "worker thread " << i << " deployed..." << std::endl;
     }
-    std::cout << "Creating threads num: " << nr_threads_ << std::endl;
     for (auto thp : thread_pool)
         thp->join();
 }
@@ -75,6 +76,9 @@ void Server::do_accept()
 void Server::do_await_shutdown()
 {
     signals_.async_wait([this](boost::system::error_code ec, int signo) {
+        for (auto ioc : io_contexts_) {
+            ioc->stop();// 这里要先关闭io_context，否则会导致session的重复关闭
+        }
         acceptor_.close();
         session_controller_.StopAll();
     });
@@ -88,11 +92,12 @@ std::tuple<IO_Ctx_Ptr, Rh_Ptr> Server::get_io_context()
         for (int i = 0; i < nr_threads_; ++i) {
             io_contexts_.push_back(std::make_shared<boost::asio::io_context>(1));
             handlers_.push_back(std::make_shared<RequestHandler>());
+            works_.push_back(boost::asio::make_work_guard(*io_contexts_[i]));
         }
     }
     static int count = -1;
     if (++count >= io_contexts_.size()) count = 0;
-    return std::make_tuple(io_contexts_[count], handlers_[count++]);
+    return std::make_tuple(io_contexts_[count], handlers_[count]);
 }
 
 }// namespace http
