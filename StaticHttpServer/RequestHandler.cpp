@@ -52,7 +52,7 @@ std::string RequestHandler::HandleBadRequest(StatusCode code)
     return rs.ToString();
 }
 
-void RequestHandler::HandleGoodRequest(Request &req, std::function<void(const std::string &)> call_back)
+void RequestHandler::HandleGetRequest(Request &req, std::function<void(const std::string &)> call_back)
 {
     if (!req.ok()) {
         call_back(HandleBadRequest(req.status()));
@@ -94,6 +94,12 @@ void RequestHandler::HandleGoodRequest(Request &req, std::function<void(const st
     rs.set_headline(response_str_map.at(StatusCode::OK));
     file.close();
     call_back(rs.ToString());
+}
+
+// TODO
+std::string RequestHandler::HandlePostRequest(Request &req)
+{
+    return HandleBadRequest(StatusCode::NOT_IMPLEMENTED);
 }
 
 std::string RequestHandler::decode(const std::string &uri)

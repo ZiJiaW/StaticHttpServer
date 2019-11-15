@@ -35,6 +35,7 @@ void Request::set_header(std::string &&name, std::string &&value)
     if (name == "Content-Length") {// 对于POST请求记录段长
         try {
             content_length_ = std::stoi(value);
+            std::cout << content_length_ << std::endl;
         }
         catch (const std::exception &ex) {
             std::cout << ex.what() << std::endl;
@@ -47,7 +48,7 @@ void Request::set_header(std::string &&name, std::string &&value)
     }
     // TODO: some other headers to analyze
     // ...
-    headers_.emplace(std::make_pair(name, value));
+    headers_.emplace(std::make_pair(std::move(name), std::move(value)));
 }
 
 }// namespace http

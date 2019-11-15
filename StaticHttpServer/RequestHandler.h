@@ -13,8 +13,11 @@ public:
 
     // Handle a bad request.
     std::string HandleBadRequest(StatusCode code);
-    // Handle a "good" request, which may be also bad after further analysis.
-    void HandleGoodRequest(Request &req, std::function<void(const std::string &)> f);
+    // Handle a Get request, which may be also bad after further analysis.
+    void HandleGetRequest(Request &req, std::function<void(const std::string &)> f);
+
+    // Handle Post
+    std::string HandlePostRequest(Request &req);
 
 private:
     std::string root_path;

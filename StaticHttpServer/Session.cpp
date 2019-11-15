@@ -36,7 +36,6 @@ void Session::do_read()
     socket_.async_read_some(boost::asio::buffer(buffer_), 
     [this, self](boost::system::error_code ec, std::size_t nr_bytes)
     {
-        std::cout << "start read!" << std::endl;
         if (ec) {// 最简单的错误处理
             std::cout << "Bad reading attempt: " << ec.message() << std::endl;
             session_controller_.Stop(shared_from_this());
@@ -54,12 +53,24 @@ void Session::do_read()
         case RequestParser::ParseResult::GOOD:
             // 进一步解析请求构造应答
             to_close_ = !request_.keep_alive();
-            request_handler_.HandleGoodRequest(request_, 
-            [this](const std::string & resp) {
-                response_ = resp;
+            if (request_.method() == Method::GET) {
+                request_handler_.HandleGetRequest(request_, [this](const std::string & resp) {
+                    response_ = resp;
+                    parser_.Reset();
+                    do_write();
+                });
+            }
+            else {// POST here
+                response_ = request_handler_.HandlePostRequest(request_);
                 parser_.Reset();
                 do_write();
-            });
+
+                /*request_handler_.HandleGetRequest(request_, [this](const std::string & resp) {
+                    response_ = resp;
+                    parser_.Reset();
+                    do_write();
+                });*/
+            }
             break;
         default:// UNFINISHED
             do_read();
@@ -70,7 +81,6 @@ void Session::do_read()
 void Session::do_write()
 {
     auto self(shared_from_this());
-    std::cout << "start write!" << std::endl;
     // TODO: 这里暂未考虑chunk发送的接口处理
     socket_.async_write_some(boost::asio::buffer(response_),
     [this, self](boost::system::error_code ec, std::size_t nr_bytes)

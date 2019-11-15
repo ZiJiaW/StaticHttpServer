@@ -7,8 +7,12 @@ RequestParser::ParseResult RequestParser::Parse(char *begin, char *end, Request 
 {
     while (begin != end) {
         auto r = parse_one(*begin++, req);
-        if (r == ParseResult::GOOD || r == ParseResult::BAD)
+        
+        if (r == ParseResult::GOOD || r == ParseResult::BAD) {
+            std::cout << r << std::endl;
             return r;
+        }
+            
     }
     return ParseResult::UNFINISHED;
 }
@@ -117,7 +121,7 @@ RequestParser::ParseResult RequestParser::parse_one(char in, Request &req)
             req.set_body(std::move(body_));
             return ParseResult::GOOD;
         }
-        return body_.size() > req.content_length() ? body_.clear(), ParseResult::BAD : ParseResult::UNFINISHED;
+        return body_.size() > req.content_length() ? (body_.clear(), ParseResult::BAD) : ParseResult::UNFINISHED;
     case State::CHUNK_LENGTH:
         if (in == '\r') {
             state_ = State::AFTER_LENGTH;
@@ -130,6 +134,7 @@ RequestParser::ParseResult RequestParser::parse_one(char in, Request &req)
                 chunk_length_ = 0;
                 return ParseResult::BAD;
             }
+            s_chunk_length_.clear();
             return ParseResult::UNFINISHED;
         }
         s_chunk_length_.push_back(in);
@@ -143,12 +148,12 @@ RequestParser::ParseResult RequestParser::parse_one(char in, Request &req)
         chunk_length_ = 0;
         return ParseResult::BAD;
     case State::CHUNK_BODY:
-        if (in == '\r') {
+        if (chunk_length_ == 0) {
             state_ = State::AFTER_BODY;
-            return chunk_length_ == 0 ? ParseResult::UNFINISHED : chunk_length_ = 0, ParseResult::BAD;
+            return in == '\r' ? ParseResult::UNFINISHED : (chunk_length_ = 0, ParseResult::BAD);
         }
         req.push_body(in);
-        return --chunk_length_ < 0 ? chunk_length_ = 0, ParseResult::BAD : ParseResult::UNFINISHED;
+        return --chunk_length_ < 0 ? (chunk_length_ = 0, ParseResult::BAD) : ParseResult::UNFINISHED;
     case State::AFTER_BODY:
         if (in == '\n') {
             state_ = State::CHUNK_LENGTH;
