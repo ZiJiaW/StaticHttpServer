@@ -54,9 +54,12 @@ void Session::do_read()
         case RequestParser::ParseResult::GOOD:
             // 进一步解析请求构造应答
             to_close_ = !request_.keep_alive();
-            response_ = request_handler_.HandleGoodRequest(request_);
-            parser_.Reset();
-            do_write();
+            request_handler_.HandleGoodRequest(request_, 
+            [this](const std::string & resp) {
+                response_ = resp;
+                parser_.Reset();
+                do_write();
+            });
             break;
         default:// UNFINISHED
             do_read();
@@ -85,6 +88,7 @@ void Session::do_write()
         }
         // 继续读新请求
         // TODO: 要考虑超时处理
+        request_ = Request();
         do_read();
     });
 }

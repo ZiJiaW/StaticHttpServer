@@ -17,13 +17,17 @@ public:
 
     Method method() { return method_; }
 
-    bool ok() { return is_valid_; }
+    bool ok() const { return is_valid_; }
 
     void set_header(std::string &&name, std::string &&value);
+    StatusCode status() { return status_; }
 
     int content_length() { return content_length_; }
     bool chunked() { return chunked_; }
     bool keep_alive() { return keep_alive_; }
+
+    const std::string &get(const std::string &name) const { return headers_.at(name); }
+    const std::string &uri() const { return uri_; }
 private:
     Method method_;
     Version version_;

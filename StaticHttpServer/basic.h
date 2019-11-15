@@ -37,13 +37,4 @@ enum StatusCode {
     VERSION_NOT_SUPPORTED = 505
 };
 
-namespace mime_types {
-
-std::string GetType(const std::string &extension);
-
-extern std::string default_type;
-extern std::unordered_map<std::string, std::string> mime_map;
-
-}// namespace mime_types
-
 }// namespace http

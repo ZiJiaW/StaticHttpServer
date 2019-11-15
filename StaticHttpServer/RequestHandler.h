@@ -8,16 +8,19 @@ namespace http {
 class RequestHandler
 {
 public:
-    RequestHandler() = default;
+    RequestHandler(std::string root = ".") : root_path(root) {};
     ~RequestHandler() = default;
 
     // Handle a bad request.
     std::string HandleBadRequest(StatusCode code);
     // Handle a "good" request, which may be also bad after further analysis.
-    std::string HandleGoodRequest(const Request &req);
+    void HandleGoodRequest(Request &req, std::function<void(const std::string &)> f);
 
 private:
-    static std::unordered_map<StatusCode, std::string> response_str_map;
+    std::string root_path;
+    // this function decode uri to the targeted file path
+    std::string decode(const std::string &uri);
+    std::set<std::ifstream> fss;
 };
 
 }

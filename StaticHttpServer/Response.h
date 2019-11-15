@@ -21,6 +21,9 @@ public:
     void set_headline(const std::string &hl) { headline_ = hl; }
     void set_header(std::string &&name, std::string &&value) { headers_.push_back(std::make_pair(std::move(name), std::move(value))); }
     void set_body(std::string &&body) { body_ = std::move(body); }
+    void push_body(const char *buf, std::size_t size) { body_.append(buf, size); }
+    std::size_t body_size() { return body_.size(); }
+
     std::string ToString();
 private:
     std::string headline_;
