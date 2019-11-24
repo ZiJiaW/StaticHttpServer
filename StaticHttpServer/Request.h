@@ -14,7 +14,7 @@ public:
     void push_uri(char ch) { uri_.push_back(ch); }
     void set_body(std::string &&s) { body_ = s; }
     void push_body(char ch) { body_.push_back(ch); }
-
+	const std::string get_body() { return body_; }
     Method method() { return method_; }
 
     bool ok() const { return is_valid_; }
@@ -28,6 +28,7 @@ public:
 
     const std::string &get(const std::string &name) const { return headers_.at(name); }
     const std::string &uri() const { return uri_; }
+	
 private:
     Method method_;
     Version version_;
