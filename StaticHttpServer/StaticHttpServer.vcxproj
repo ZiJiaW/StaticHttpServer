@@ -77,8 +77,8 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>C:\Program Files\OpenSSL-Win64\include;C:\local\boost_1_67_0;$(IncludePath)</IncludePath>
-    <LibraryPath>C:\Program Files\OpenSSL-Win64\lib;C:\local\boost_1_67_0\lib64-msvc-14.1;$(LibraryPath)</LibraryPath>
+    <IncludePath>C:\Program Files\OpenSSL-Win64\include;E:\Program Files %28x86%29\OpenSSL-Win64\include;E:\cppLibs\boost_1_71_0;C:\local\boost_1_67_0;$(IncludePath)</IncludePath>
+    <LibraryPath>C:\Program Files\OpenSSL-Win64\lib;E:\Program Files %28x86%29\OpenSSL-Win64\lib;E:\cppLibs\boost_1_71_0\lib64-msvc-14.1;C:\local\boost_1_67_0\lib64-msvc-14.1;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>

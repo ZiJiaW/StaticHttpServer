@@ -177,8 +177,8 @@ std::string RequestHandler::HandlePostRequest(Request &req)
 		return rs.ToString();
 	}*/
 	
-	std::string content = req.get_body();
-	std::string reqcontent = string_To_UTF8(content);
+	std::string reqcontent = req.get_body();
+	//std::string reqcontent = string_To_UTF8(content);
 	//当选中文件又取消则有Content-Type属性但body内为空直接返回200ok
 	if (reqcontent.size() < lastboundary.size())
 	{
