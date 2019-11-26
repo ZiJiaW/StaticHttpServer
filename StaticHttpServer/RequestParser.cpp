@@ -9,7 +9,7 @@ RequestParser::ParseResult RequestParser::Parse(char *begin, char *end, Request 
         auto r = parse_one(*begin++, req);
         
         if (r == ParseResult::GOOD || r == ParseResult::BAD) {
-            std::cout << r << std::endl;
+            //std::cout << r << std::endl;
             return r;
         }
             

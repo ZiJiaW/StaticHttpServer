@@ -41,7 +41,7 @@ void Session::do_read()
             session_controller_.Stop(shared_from_this());
             return;
         }
-        std::cout << std::string(buffer_.data(), nr_bytes) << std::endl;
+        //std::cout << std::string(buffer_.data(), nr_bytes) << std::endl;
         auto parse_result = parser_.Parse(buffer_.data(), buffer_.data() + nr_bytes, request_);
         switch (parse_result) {
         case RequestParser::ParseResult::BAD:
@@ -64,12 +64,6 @@ void Session::do_read()
                 response_ = request_handler_.HandlePostRequest(request_);
                 parser_.Reset();
                 do_write();
-
-                /*request_handler_.HandleGetRequest(request_, [this](const std::string & resp) {
-                    response_ = resp;
-                    parser_.Reset();
-                    do_write();
-                });*/
             }
             break;
         default:// UNFINISHED

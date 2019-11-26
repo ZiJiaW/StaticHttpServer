@@ -18,12 +18,16 @@ public:
 
     // Handle Post
     std::string HandlePostRequest(Request &req);
+    
 
 private:
     std::string root_path;
     // this function decode uri to the targeted file path
     std::string decode(const std::string &uri);
     std::set<std::ifstream> fss;
+
+    void PostResponseOK(Response &rs);
+    std::size_t find_next(const std::string &str, const std::string &aim, std::size_t pos);
 };
 
 }
