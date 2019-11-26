@@ -97,34 +97,49 @@ void RequestHandler::HandleGetRequest(Request &req, std::function<void(const std
     call_back(rs.ToString());
 }
 
-std::string string_To_UTF8(const std::string & str)
+//std::string string_To_UTF8(const std::string & str)
+//{
+//	int nwLen = ::MultiByteToWideChar(CP_ACP, 0, str.c_str(), -1, NULL, 0);
+//
+//	wchar_t * pwBuf = new wchar_t[nwLen + 1];//一定要加1，不然会出现尾巴 
+//	ZeroMemory(pwBuf, nwLen * 2 + 2);
+//
+//	::MultiByteToWideChar(CP_ACP, 0, str.c_str(), str.length(), pwBuf, nwLen);
+//
+//	int nLen = ::WideCharToMultiByte(CP_UTF8, 0, pwBuf, -1, NULL, NULL, NULL, NULL);
+//
+//	char * pBuf = new char[nLen + 1];
+//	ZeroMemory(pBuf, nLen + 1);
+//
+//	::WideCharToMultiByte(CP_UTF8, 0, pwBuf, nwLen, pBuf, nLen, NULL, NULL);
+//
+//	std::string retStr(pBuf);
+//
+//	delete[]pwBuf;
+//	delete[]pBuf;
+//
+//	pwBuf = NULL;
+//	pBuf = NULL;
+//
+//	return retStr;
+//}
+// TODO
+
+
+void PostResponseOK(Response &rs)
 {
-	int nwLen = ::MultiByteToWideChar(CP_ACP, 0, str.c_str(), -1, NULL, 0);
-
-	wchar_t * pwBuf = new wchar_t[nwLen + 1];//一定要加1，不然会出现尾巴 
-	ZeroMemory(pwBuf, nwLen * 2 + 2);
-
-	::MultiByteToWideChar(CP_ACP, 0, str.c_str(), str.length(), pwBuf, nwLen);
-
-	int nLen = ::WideCharToMultiByte(CP_UTF8, 0, pwBuf, -1, NULL, NULL, NULL, NULL);
-
-	char * pBuf = new char[nLen + 1];
-	ZeroMemory(pBuf, nLen + 1);
-
-	::WideCharToMultiByte(CP_UTF8, 0, pwBuf, nwLen, pBuf, nLen, NULL, NULL);
-
-	std::string retStr(pBuf);
-
-	delete[]pwBuf;
-	delete[]pBuf;
-
-	pwBuf = NULL;
-	pBuf = NULL;
-
-	return retStr;
+	rs.set_headline(response_str_map.at(StatusCode::OK));
+	std::string body = "<html>"
+		"<head><title>POST Request</title></head>"
+		"<body><h1>" + std::to_string(static_cast<int>(OK)) +
+		" success</h1><h2>" + response_str_map.at(OK) + "<h2></body>"
+		"</html>";
+	rs.set_header("Content-Length", std::to_string(body.size()));
+	rs.set_header("Content-Type", "text/html");
+	rs.set_header("Server", "SHS");
+	rs.set_body(std::move(body));
 }
 
-// TODO
 std::string RequestHandler::HandlePostRequest(Request &req)
 {
 	Response rs;
@@ -137,23 +152,14 @@ std::string RequestHandler::HandlePostRequest(Request &req)
 	}
 	catch (std::out_of_range &exc)
 	{
-		rs.set_headline(response_str_map.at(StatusCode::OK));
-		std::string body = "<html>"
-			"<head><title>POST Request</title></head>"
-			"<body><h1>" + std::to_string(static_cast<int>(OK)) +
-			" success</h1><h2>" + response_str_map.at(OK) + "<h2></body>"
-			"</html>";
-		rs.set_header("Content-Length", std::to_string(body.size()));
-		rs.set_header("Content-Type", "text/html");
-		rs.set_header("Server", "SHS");
-		rs.set_body(std::move(body));
+		PostResponseOK(rs);
 
 		return rs.ToString();
 	}
 
 	auto Type = req.get("Content-Type");
-	auto pos = std::move(Type).find_first_of("boundary=");
-	if (pos != -1)     //取得分界符和结束符
+	auto pos = std::move(Type).find("boundary=");
+	if (pos != std::string::npos)     //取得分界符和结束符
 	{
 		std::string b = "boundary=";
 		pos += b.size();
@@ -177,65 +183,80 @@ std::string RequestHandler::HandlePostRequest(Request &req)
 		return rs.ToString();
 	}*/
 	
-	std::string content = req.get_body();
-	std::string reqcontent = string_To_UTF8(content);
+	std::string reqcontent = req.get_body();
+	//std::string reqcontent = content;
 	//当选中文件又取消则有Content-Type属性但body内为空直接返回200ok
 	if (reqcontent.size() < lastboundary.size())
 	{
-		rs.set_headline(response_str_map.at(StatusCode::OK));
-		std::string body = "<html>"
-			"<head><title>POST Request</title></head>"
-			"<body><h1>" + std::to_string(static_cast<int>(OK)) +
-			" success</h1><h2>" + response_str_map.at(OK) + "<h2></body>"
-			"</html>";
-		rs.set_header("Content-Length", std::to_string(body.size()));
-		rs.set_header("Content-Type", "text/html");
-		rs.set_header("Server", "SHS");
-		rs.set_body(std::move(body));
+		PostResponseOK(rs);
 
 		return rs.ToString();
 	}
 	
-	pos = reqcontent.find("filename=");
-
-	reqcontent = reqcontent.substr(pos + std::string("filename=").length() + 1);
-
-	auto post_mark = reqcontent.find_first_of('\"');
-
-	auto filename = reqcontent.substr(0, post_mark);
-	auto last_slash = filename.find_last_of('/');
-	if (last_slash == std::string::npos)
+	/*pos = reqcontent.find(boundary);
+	while (reqcontent.find("filename=", pos) != std::string::npos)
 	{
-		filename = filename.substr(0);
-	}
-	else
+		pos = reqcontent.find("filename=",pos);
+		//reqcontent = reqcontent.substr(pos + std::string("filename=").length() + 1);
+		auto post_mark = reqcontent.find('\"',pos);
+		auto filename = reqcontent.substr(pos + std::string("filename=").length() + 1, post_mark - (pos + std::string("filename=").length() + 1));
+		auto last_slash = filename.find_last_of('/');
+		if (last_slash == std::string::npos)
+		{
+			//filename = filename.substr(0);
+		}
+		else
+		{
+			filename = filename.substr(last_slash);
+		}
+		pos = reqcontent.find("\r\n\r\n", pos);
+		auto posboundary = reqcontent.find(boundary, pos);
+		auto content = reqcontent.substr(pos + std::string("\r\n\r\n").length(), posboundary - (pos + std::string("\r\n\r\n").length()));
+		auto file_path = root_path + "/" + filename;
+		std::ofstream file(file_path, std::ios::out | std::ios::binary);
+		file << content;
+		pos = posboundary;
+	}*/
+
+	while (reqcontent.find("filename=") != std::string::npos)
 	{
-		filename = filename.substr(last_slash);
+		pos = reqcontent.find("filename=");
+		reqcontent = reqcontent.substr(pos + std::string("filename=").length() + 1);
+
+		auto post_mark = reqcontent.find_first_of('\"');
+
+		auto filename = reqcontent.substr(0, post_mark);
+		auto last_slash = filename.find_last_of('/');
+		if (last_slash == std::string::npos)
+		{
+			filename = filename.substr(0);
+		}
+		else
+		{
+			filename = filename.substr(last_slash);
+		}
+
+		pos = reqcontent.find("\r\n\r\n");
+
+		reqcontent = reqcontent.substr(pos + std::string("\r\n\r\n").length());
+
+		auto end = reqcontent.find(boundary);
+
+		auto content = reqcontent.substr(0, end - 1);
+
+		auto file_path = root_path + "/" + filename;
+
+		std::ofstream file(file_path, std::ios::out | std::ios::binary);
+
+		file << content;
+		reqcontent = reqcontent.substr(end + boundary.size());
 	}
 	
-	pos = reqcontent.find("\r\n\r\n");
-	
-	reqcontent = reqcontent.substr(pos + std::string("\r\n\r\n").length());
+	/*reqcontent = reqcontent.substr(pos + std::string("\r\n\r\n").length());
 	auto end = reqcontent.find(lastboundary);
-	reqcontent = reqcontent.substr(0, end - 1);
-	
-	auto file_path = root_path + filename;
-	
-	std::ofstream file(file_path, std::ios::out | std::ios::binary);
-	
+	reqcontent = reqcontent.substr(0, end - 1);*/
 
-	file << reqcontent;
-
-	rs.set_headline(response_str_map.at(StatusCode::OK));
-	std::string body = "<html>"
-		"<head><title>POST Request</title></head>"
-		"<body><h1>" + std::to_string(static_cast<int>(OK)) +
-		" success</h1><h2>" + response_str_map.at(OK) + "<h2></body>"
-		"</html>";
-	rs.set_header("Content-Length", std::to_string(body.size()));
-	rs.set_header("Content-Type", "text/html");
-	rs.set_header("Server", "SHS");
-	rs.set_body(std::move(body));
+	PostResponseOK(rs);
 
 
     return rs.ToString();
