@@ -8,8 +8,9 @@ namespace http {
 Session::Session(boost::asio::ip::tcp::socket socket,
     boost::asio::io_context &io_context,
     SessionController &session_controller,
-    RequestHandler &request_handler) :
-    socket_(std::move(socket)),
+    RequestHandler &request_handler,
+    boost::asio::ssl::context &ssl_context) :
+    socket_(std::move(socket), ssl_context),
     io_context_(io_context),
     session_controller_(session_controller),
     request_handler_(request_handler)
@@ -17,17 +18,38 @@ Session::Session(boost::asio::ip::tcp::socket socket,
 
 void Session::Open()
 {
-    do_read();
+    do_handshake();
+}
+
+void Session::do_handshake()
+{
+    auto self(shared_from_this());
+    socket_.async_handshake(boost::asio::ssl::stream_base::server,
+    [this, self](const boost::system::error_code &ec) {
+        if (!ec) {
+            std::cout << "Open ssl connection @" << socket_.lowest_layer().remote_endpoint().address()
+                << ":" << socket_.lowest_layer().remote_endpoint().port() << std::endl;
+            do_read();
+        }
+        else {
+           //std::cout << "Handshake failure, abort!" << std::endl;
+        }
+    });
 }
 
 void Session::Close()
 {
     std::cout << "Close connection: " 
-        << socket_.remote_endpoint().address()
-        << ":"<< socket_.remote_endpoint().port() 
+        << socket_.lowest_layer().remote_endpoint().address()
+        << ":"<< socket_.lowest_layer().remote_endpoint().port()
         << std::endl;
-    socket_.shutdown(boost::asio::ip::tcp::socket::shutdown_both);
-    socket_.close();
+    boost::system::error_code ec;
+    socket_.lowest_layer().shutdown(boost::asio::socket_base::shutdown_both, ec);
+    if (!ec) {
+        socket_.lowest_layer().close(ec);
+        if (ec) std::cout << "Close err: " << ec.message() << std::endl;
+    }
+    else std::cout << "Shutdown err: " << ec.message() << std::endl;
 }
 
 void Session::do_read()
@@ -75,6 +97,7 @@ void Session::do_read()
 void Session::do_write()
 {
     auto self(shared_from_this());
+    //std::cout << response_ << std::endl;
     // TODO: 这里暂未考虑chunk发送的接口处理
     socket_.async_write_some(boost::asio::buffer(response_),
     [this, self](boost::system::error_code ec, std::size_t nr_bytes)

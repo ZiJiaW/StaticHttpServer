@@ -42,6 +42,8 @@ private:
     void do_await_shutdown();
     // 分配请求到新的IO context
     std::tuple<IO_Ctx_Ptr, Rh_Ptr> get_io_context();
+    // SSL连接支持
+    boost::asio::ssl::context ssl_context_;
 };
 
 }// namespace http

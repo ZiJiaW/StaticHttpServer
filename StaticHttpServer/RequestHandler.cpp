@@ -86,10 +86,13 @@ void RequestHandler::HandleGetRequest(Request &req, std::function<void(const std
         call_back(HandleBadRequest(StatusCode::NOT_FOUND));
         return;
     }
-    char buf[1024];
-    while (!file.read(buf, sizeof(buf)).eof()) {
+    char buf[2048];
+    do {
+        file.read(buf, sizeof(buf));
         rs.push_body(buf, file.gcount());
-    }
+        //std::cout << rs.body_size() << std::endl;
+    } while (!file.eof());
+    std::cout << rs.body_size() << std::endl;
     rs.set_header("Content-Length", std::to_string(rs.body_size()));
     rs.set_header("Server", "SHS");
     rs.set_headline(response_str_map.at(StatusCode::OK));

@@ -15,15 +15,17 @@ public:
     explicit Session(boost::asio::ip::tcp::socket socket,
         boost::asio::io_context &io_context,
         SessionController &session_controller,
-        RequestHandler &request_handler);
+        RequestHandler &request_handler,
+        boost::asio::ssl::context &ssl_context);
     ~Session(){}
 
     void Open();
     void Close();
 
 private:
-    // 本次会话的socket对象
-    boost::asio::ip::tcp::socket socket_;
+    // 本次会话的socket对象(ssl支持)
+    //boost::asio::ip::tcp::socket socket_;
+    boost::asio::ssl::stream<boost::asio::ip::tcp::socket> socket_;
     // 与此次连接绑定的IO Context
     boost::asio::io_context &io_context_;
     // 全局唯一的控制对象
@@ -44,6 +46,8 @@ private:
     // R/W function
     void do_read();
     void do_write();
+    // SSL handshake
+    void do_handshake();
 };
 
 }// namespace http

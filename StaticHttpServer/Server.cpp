@@ -13,12 +13,14 @@ Server::Server(short port, int nr_threads):
     acceptor_(*std::get<0>(get_io_context())),
     signals_(*std::get<0>(get_io_context())),
     session_controller_(),
-    works_()
+    works_(),
+    ssl_context_(boost::asio::ssl::context::sslv23)
 {
     signals_.add(SIGINT);
     signals_.add(SIGTERM);
     do_await_shutdown();// 注册结束事件
 
+    // 绑定端口
     boost::system::error_code ec;
     auto endpoint = ip::tcp::endpoint(ip::tcp::v4(), port);
     acceptor_.open(endpoint.protocol());
@@ -35,6 +37,26 @@ Server::Server(short port, int nr_threads):
         std::cerr << "Can't listen: " << ex.what() << std::endl;
         exit(1);
     }
+    // 设置ssl
+    ssl_context_.set_options(boost::asio::ssl::context::default_workarounds
+        | boost::asio::ssl::context::no_sslv2
+        | boost::asio::ssl::context::single_dh_use);
+    ssl_context_.use_private_key_file("private.key", boost::asio::ssl::context::file_format::pem, ec);
+    if (ec) {
+        std::cerr << "Fail to load private key!" << std::endl;
+        exit(1);
+    }
+    ssl_context_.use_certificate_chain_file("server.crt", ec);
+    if (ec) {
+        std::cerr << "Fail to load certificate file!" << std::endl;
+        exit(1);
+    }
+    ssl_context_.use_tmp_dh_file("dh2048.pem", ec);
+    if (ec) {
+        std::cerr << "Fail load dh param file: " + ec.message() << std::endl;
+        exit(1);
+    }
+
     do_accept();// 注册接收新的连接事件
 }
 
@@ -64,7 +86,7 @@ void Server::do_accept()
             auto tmp = get_io_context();
             std::cout << "New connection from " << socket.remote_endpoint().address() << ":" << socket.remote_endpoint().port() << std::endl;
             session_controller_.Start(std::make_shared<Session>(
-                std::move(socket), *std::get<0>(tmp), session_controller_, *std::get<1>(tmp)));
+                std::move(socket), *std::get<0>(tmp), session_controller_, *std::get<1>(tmp), ssl_context_));
         }
         else {
             std::cout << "Error happened when connecting! Abort!" << std::endl;
