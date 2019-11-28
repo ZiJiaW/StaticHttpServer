@@ -87,12 +87,11 @@ void RequestHandler::HandleGetRequest(Request &req, std::function<void(const std
         return;
     }
     char buf[2048];
-    do {
-        file.read(buf, sizeof(buf));
+    while (file.read(buf, sizeof(buf)).gcount() > 0) {
         rs.push_body(buf, file.gcount());
         //std::cout << rs.body_size() << std::endl;
-    } while (!file.eof());
-    std::cout << rs.body_size() << std::endl;
+    }
+    //std::cout << rs.body_size() << std::endl;
     rs.set_header("Content-Length", std::to_string(rs.body_size()));
     rs.set_header("Server", "SHS");
     rs.set_headline(response_str_map.at(StatusCode::OK));

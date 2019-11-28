@@ -35,7 +35,7 @@ void Request::set_header(std::string &&name, std::string &&value)
     if (name == "Content-Length") {// 对于POST请求记录段长
         try {
             content_length_ = std::stoi(value);
-            //std::cout << content_length_ << std::endl;
+            std::cout << content_length_ << std::endl;
         }
         catch (const std::exception &ex) {
             std::cout << ex.what() << std::endl;

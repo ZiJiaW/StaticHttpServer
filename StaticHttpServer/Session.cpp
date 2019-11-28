@@ -13,7 +13,8 @@ Session::Session(boost::asio::ip::tcp::socket socket,
     socket_(std::move(socket), ssl_context),
     io_context_(io_context),
     session_controller_(session_controller),
-    request_handler_(request_handler)
+    request_handler_(request_handler),
+    wrote_bytes_(0)
 {}
 
 void Session::Open()
@@ -39,17 +40,17 @@ void Session::do_handshake()
 
 void Session::Close()
 {
-    std::cout << "Close connection: " 
-        << socket_.lowest_layer().remote_endpoint().address()
-        << ":"<< socket_.lowest_layer().remote_endpoint().port()
-        << std::endl;
-    boost::system::error_code ec;
-    socket_.lowest_layer().shutdown(boost::asio::socket_base::shutdown_both, ec);
-    if (!ec) {
-        socket_.lowest_layer().close(ec);
-        if (ec) std::cout << "Close err: " << ec.message() << std::endl;
+    try {
+        std::cout << "Close connection: "
+            << socket_.lowest_layer().remote_endpoint().address()
+            << ":" << socket_.lowest_layer().remote_endpoint().port()
+            << std::endl;
+        socket_.lowest_layer().shutdown(boost::asio::socket_base::shutdown_both);
+        socket_.lowest_layer().close();
     }
-    else std::cout << "Shutdown err: " << ec.message() << std::endl;
+    catch (const std::exception &ex) {
+        std::cout << "close err: " << ex.what() << std::endl;
+    }
 }
 
 void Session::do_read()
@@ -97,14 +98,22 @@ void Session::do_read()
 void Session::do_write()
 {
     auto self(shared_from_this());
-    //std::cout << response_ << std::endl;
+    //std::cout << response_.size() << std::endl;
     // TODO: 这里暂未考虑chunk发送的接口处理
-    socket_.async_write_some(boost::asio::buffer(response_),
+
+    socket_.async_write_some(boost::asio::const_buffer(
+        response_.c_str() + wrote_bytes_, response_.size() - wrote_bytes_),
     [this, self](boost::system::error_code ec, std::size_t nr_bytes)
     {
         if (ec) {
             std::cout << "Bad writing attempt: " << ec.message() << std::endl;
             session_controller_.Stop(shared_from_this());
+            return;
+        }
+        //std::cout << "wrote " << nr_bytes << std::endl;
+        wrote_bytes_ += nr_bytes;
+        if (wrote_bytes_ != response_.size()) {
+            do_write();
             return;
         }
         // 发送成功后，如果被要求close connection则关闭
@@ -116,6 +125,7 @@ void Session::do_write()
         // 继续读新请求
         // TODO: 要考虑超时处理
         request_ = Request();
+        wrote_bytes_ = 0;
         do_read();
     });
 }
