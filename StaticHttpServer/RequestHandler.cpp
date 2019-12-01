@@ -35,6 +35,7 @@ const std::unordered_map<std::string, std::string> mime_map = {
     {"js", "text/javascript"},
     {"css", "text/css"},
     // 后续可考虑添加视频格式
+    {"mp4", "video/mp4"}
 };
 
 std::string RequestHandler::HandleBadRequest(StatusCode code)
@@ -89,7 +90,6 @@ void RequestHandler::HandleGetRequest(Request &req, std::function<void(const std
     char buf[2048];
     while (file.read(buf, sizeof(buf)).gcount() > 0) {
         rs.push_body(buf, file.gcount());
-        //std::cout << rs.body_size() << std::endl;
     }
     //std::cout << rs.body_size() << std::endl;
     rs.set_header("Content-Length", std::to_string(rs.body_size()));
@@ -101,11 +101,11 @@ void RequestHandler::HandleGetRequest(Request &req, std::function<void(const std
 
 void RequestHandler::PostResponseOK(Response &rs)
 {
-	rs.set_headline(response_str_map.at(StatusCode::OK));
+	rs.set_headline(response_str_map.at(StatusCode::CREATED));
 	std::string body = "<html>"
 		"<head><title>POST Request</title></head>"
-		"<body><h1>" + std::to_string(static_cast<int>(OK)) +
-		" success</h1><h2>" + response_str_map.at(OK) + "<h2></body>"
+		"<body><h1>" + std::to_string(static_cast<int>(StatusCode::CREATED)) +
+		" success</h1><h2>" + response_str_map.at(StatusCode::CREATED) + "<h2></body>"
 		"</html>";
 	rs.set_header("Content-Length", std::to_string(body.size()));
 	rs.set_header("Content-Type", "text/html");

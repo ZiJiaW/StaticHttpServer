@@ -5,14 +5,15 @@ namespace http {
 
 void SessionController::Start(std::shared_ptr<Session> sess)
 {
-    sessions_.insert(sess);
     sess->Open();
+    //std::lock_guard<std::mutex> lg(sessions_lock);
+    //sessions_.insert(sess);
 }
 
 void SessionController::Stop(std::shared_ptr<Session> sess)
 {
     sess->Close();
-    sessions_.erase(sess);
+    //sessions_.erase(sess);
 }
 
 void SessionController::StopAll()

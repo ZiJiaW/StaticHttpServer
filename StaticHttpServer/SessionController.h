@@ -20,6 +20,7 @@ public:
 
 private:
     std::set<std::shared_ptr<Session>> sessions_;
+    std::mutex sessions_lock;
 };
 
 }
